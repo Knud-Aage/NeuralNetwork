@@ -1,0 +1,52 @@
+Train for a maximum generalization within 750 epochs.
+#Data: 3000  Inputs: 6  Outputs: 2
+#Data: 1950  Inputs: 6  Outputs: 2
+#Data: 6500  Inputs: 6  Outputs: 2
+#Hidden units=20
+Layer 0:  Initializing weights to +/-  1.225
+Layer 1:  Initializing weights to +/-  0.671
+
+Input til
+Lag 0:
+  0.514   0.789   0.521   0.313   0.552  -1.011  -1.091 
+ -0.497   0.942   0.693  -0.957  -1.138  -1.167   1.117 
+  0.894   0.845  -0.204  -0.945  -0.985  -0.625   0.085 
+  0.061   0.980   0.415   0.591  -0.260   0.938  -0.480 
+  0.685   1.006   0.382  -1.043  -0.270   0.275   0.413 
+ -1.210   0.975  -1.110  -1.198   0.448  -0.913  -0.735 
+ -0.570  -1.205  -0.075   0.367  -1.182   1.222  -0.093 
+  1.054  -1.035   0.805   0.529  -1.084  -1.047   0.824 
+  0.085   0.484  -0.144   0.537  -1.043   1.087  -0.103 
+  0.323  -0.298  -0.816  -0.310  -0.225  -0.869   1.006 
+ -0.586   0.307   0.136  -0.481   0.411   0.552  -1.179 
+  1.104   0.401   1.031  -0.808   0.676  -0.301  -0.993 
+  1.157   0.705   0.284  -0.199  -0.600  -0.661   0.414 
+  0.998   0.113  -0.999   0.916   0.307   0.078  -0.135 
+ -1.088   0.656   1.203   0.173  -0.196  -0.406   0.120 
+ -0.348  -1.223   0.276  -0.996   1.053  -0.599  -0.762 
+ -0.750   1.148   0.975   0.515  -0.307   0.533   0.168 
+ -0.950   0.191  -0.945  -0.176   0.073   0.405  -1.134 
+ -0.545   0.286  -0.490  -0.921  -0.517  -0.034  -1.094 
+ -0.887   1.099   1.200  -1.025  -0.379  -0.489   0.157 
+Lag 1:
+ -0.389   0.507  -0.553  -0.202   0.376   0.061   0.517   0.419  -0.553  -0.581   0.418   0.107   0.368  -0.413   0.570   0.287   0.664   0.240   0.519  -0.486   0.304 
+  0.135   0.657  -0.087  -0.611   0.593  -0.470   0.322   0.295   0.625   0.596   0.594   0.643  -0.261  -0.267   0.561   0.361  -0.319   0.573  -0.664  -0.174  -0.301 
+Start error=1189.826
+Maximum performance reached after 622 epochs.
+Incorrect seed classified incorrectly (<1%):   1.200%
+Correct seed classified incorrectly (<15%):  14.222%
+
+
+Net performance on TRAINING set
+Correctly predicted in class / total in class
+---------------------------------------------
+Incorrect seed classified incorrectly (<1%):  (#incorrect=2640)   0.795 %
+Correct seed classified incorrectly (<15%):   (#correct=360)  15.000 %
+Generalization:   97.500
+
+Net performance on TEST set
+Correctly predicted in class / total in class
+---------------------------------------------
+Incorrect seed classified incorrectly (<1%):  (#incorrect=5000)   1.180 %
+Correct seed classified incorrectly (<15%):   (#correct=1500)  13.600 %
+Generalization:   95.954

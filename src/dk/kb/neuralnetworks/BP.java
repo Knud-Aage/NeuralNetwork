@@ -295,28 +295,16 @@ public class BP {
     }
 
 
-
-
-
-
-
-
-/* Set the net parameter 'eta' (Learning) */
-
-
-
     /* Compute the activity of all units in the net for the given input */
-    void Activate_net(net)
-    Neural_net *net;
+    void Activate_net(BP net)
     {
         register double sum;
-        register int i,j,l;
 
   /* Compute the activity of the 1'st layer using the input layer */
-        for (i=1; i <= net.no_units[0]; i++)
+        for (int i=1; i <= net.no_units[0]; i++)
         {
             sum=0.0;
-            for (j=0; j <= net.no_inputs; j++)
+            for (int j=0; j <= net.no_inputs; j++)
             {
                 sum += net.input[j] * net.layer[0].unit[i].weight[j];
             }
@@ -324,12 +312,12 @@ public class BP {
       /*printf("(%7.3f %7.3f) ",sum,g((sum),(net.acc)));*/
         }
   /* Compute the activity of the remaining layers */
-        for (l=1; l <= net.no_hidden_layers; l++)
+        for (int l=1; l <= net.no_hidden_layers; l++)
         {
-            for (i=1; i <= net.no_units[l]; i++)
+            for (int i=1; i <= net.no_units[l]; i++)
             {
                 sum=0.0;
-                for (j=0; j <= net.no_units[l-1]; j++)
+                for (int j=0; j <= net.no_units[l-1]; j++)
                 {
                     sum += net.layer[l-1].unit[j].act *
                             net.layer[l].unit[i].weight[j];
@@ -342,21 +330,19 @@ public class BP {
 
 
     /* Compute the summed error of the net on all patterns in the dataset */
-    double Error(net,train,val)
-    Neural_net *net;
-    Data_set *train,*val;
+    double Error(BP net, Dataset train, Dataset val)
     {
-        register double err,maxo;
-        register int i,u,maxi=1;
+        double err,maxo;
+        int maxi=1;
 
   /* Calculate error on TRAINING set + generalization */
         err=0.0; train.per15=train.per1=train.gen=0.0;
-        for (u=0; u < train.no; u++)
+        for (int u=0; u < train.no; u++)
         {
             Present_pattern(net,train,u);
             Activate_net(net);
             maxo=0.0;
-            for (i=1; i <= net.no_outputs; i++)
+            for (int i=1; i <= net.no_outputs; i++)
             {
                 err += sqr((train.Plist[u].output[i]) -
                         (net.layer[net.no_hidden_layers].unit[i].act));
@@ -387,7 +373,7 @@ public class BP {
             Present_pattern(net,val,u);
             Activate_net(net);
             maxo=0.0;
-            for (i=1; i <= net.no_outputs; i++)
+            for (int i=1; i <= net.no_outputs; i++)
             {
 	  /* Find maximum output */
                 if (net.layer[net.no_hidden_layers].unit[i].act > maxo)
@@ -413,20 +399,15 @@ public class BP {
         return (0.5*err);
     }
 
-
     /* Compute all units 'delta' by 'error back-propagation'     */
 /* It is used that g'(h,a)=a*g(h,a)*(1-g(h,a)) evt. (+0.1)?  */
-    void Error_back_propagation(net,train,u)
-    Neural_net *net;
-    Data_set *train;
-    int u;
+    void Error_back_propagation(BP net,Dataset train, int u)
     {
-        register double sum;
-        register i,j,l,out_layer;
+        double sum;
 
   /* STEP 4 in the BP algorithm p.120 in the book */
-        out_layer=net.no_hidden_layers;
-        for (i=1; i <= net.no_outputs; i++)
+        int out_layer=net.no_hidden_layers;
+        for (int i=1; i <= net.no_outputs; i++)
         {
             net.layer[out_layer].unit[i].delta =
                     (train.Plist[u].output[i] - net.layer[out_layer].unit[i].act) *
@@ -434,12 +415,12 @@ public class BP {
                                     (1-net.layer[out_layer].unit[i].act)) + 0.0;
         }
   /* STEP 5 in the BP algorithm p.120 in the book */
-        for (l=net.no_hidden_layers-1; l >= 0; l--)
+        for (int l=net.no_hidden_layers-1; l >= 0; l--)
         {
-            for (i=1; i <= net.no_units[l]; i++)
+            for (int i=1; i <= net.no_units[l]; i++)
             {
                 sum=0.0;
-                for (j=1; j <= net.no_units[l+1]; j++)
+                for (int j=1; j <= net.no_units[l+1]; j++)
                 {
                     sum += net.layer[l+1].unit[j].weight[i] *
                             net.layer[l+1].unit[j].delta;
@@ -451,9 +432,9 @@ public class BP {
         }
 
   /* Calculate EW(12) for links between input and first layer */
-        for (i=0; i <= net.no_inputs; i++)
+        for (int i=0; i <= net.no_inputs; i++)
         {
-            for (j=1; j <= net.no_units[0]; j++)
+            for (int j=1; j <= net.no_units[0]; j++)
             {
                 net.layer[0].unit[j].EW[i] = net.input[i] *
                         net.layer[0].unit[j].delta;
@@ -461,11 +442,11 @@ public class BP {
         }
 
   /* Calculate EW's for the rest of the layers */
-        for (l=0; l<net.no_hidden_layers; l++)
+        for (int l=0; l<net.no_hidden_layers; l++)
         {
-            for (i=0; i <= net.no_units[l]; i++)
+            for (int i=0; i <= net.no_units[l]; i++)
             {
-                for (j=1; j <= net.no_units[l+1]; j++)
+                for (int j=1; j <= net.no_units[l+1]; j++)
                 {
                     net.layer[l+1].unit[j].EW[i] =
                             net.layer[l+1].unit[j].delta *
@@ -480,18 +461,16 @@ public class BP {
 
     /* Update the weights and threshold using the just calculated 'delta' */
 /* This procedure performs STEP 6 in the BP algorithm */
-    void Update_weights(net)
-    Neural_net *net;
+    void Update_weights(BP net)
     {
-        register double dW;
-        register int i,j,l;
+        double dW;
 
   /* Beregn vaegtforandringerne for de "sidste" lag i nettet */
-        for (l=net.no_hidden_layers; l>=1; l--)
+        for (int l=net.no_hidden_layers; l>=1; l--)
         {
-            for (i=1; i <= net.no_units[l]; i++)
+            for (int i=1; i <= net.no_units[l]; i++)
             {
-                for (j=0; j <= net.no_units[l-1]; j++)
+                for (int j=0; j <= net.no_units[l-1]; j++)
                 {
                     dW = net.eta * net.layer[l].unit[i].EW[j];
                     dW += net.alfa * net.layer[l].unit[i].prev_dW[j];
@@ -502,9 +481,9 @@ public class BP {
         }
   /* Beregn vaegtforandringen for forbindelsen mellem input laget og */
   /* det efterfoelgende lag.                                         */
-        for (i=1; i <= net.no_units[0]; i++)
+        for (int i=1; i <= net.no_units[0]; i++)
         {
-            for (j=0; j <= net.no_inputs; j++)
+            for (int j=0; j <= net.no_inputs; j++)
             {
                 dW = net.eta * net.layer[0].unit[i].EW[j];
                 dW += net.alfa * net.layer[0].unit[i].prev_dW[j];
@@ -514,24 +493,21 @@ public class BP {
         }
     }
 
-
     /* Evaluate the net on a test set (calculate ability of generalization) */
-    void Test_network(net,data)
-    Neural_net *net;
-    Data_set *data;
+    void Test_network(BP net, Dataset data)
     {
-        int i,u,output=1;
+        int output=1;
         double maxo;
         long tid1,tid2;
 
         time(&tid1);
         data.per1=data.per15=data.gen=0.0;
-        for (u=0; u < data.no; u++)
+        for (int u=0; u < data.no; u++)
         {
             Present_pattern(net,data,u);
             Activate_net(net);
             maxo=0.0;
-            for (i=1; i <= net.no_outputs; i++)
+            for (int i=1; i <= net.no_outputs; i++)
             {
                 if ( net.layer[net.no_hidden_layers].unit[i].act > maxo)
                 {
@@ -556,24 +532,18 @@ public class BP {
         printf("Time: %ld   Performance: %d\n",tid2-tid1,data.no/(tid2-tid1));
     }
 
-
-    void Print_results(data)
-    Data_set *data;
+    void Print_results(Dataset data)
     {
-        printf("Correctly predicted in class / total in class\n");
-        printf("---------------------------------------------\n");
-        printf("Incorrect seed classified incorrectly (<1%%):  (#incorrect=%d) %7.3f %%\n",data.no_incorrect,data.per1);
-        printf("Correct seed classified incorrectly (<15%%):   (#correct=%d) %7.3f %%\n",data.no_correct,data.per15);
-        printf("Generalization:  %7.3f\n",data.gen);
+        System.out.println("Correctly predicted in class / total in class\n");
+        System.out.println("---------------------------------------------\n");
+        System.out.println("Incorrect seed classified incorrectly (<1%%):  (#incorrect=%d) %7.3f %%\n",data.no_incorrect,data.per1);
+        System.out.println("Correct seed classified incorrectly (<15%%):   (#correct=%d) %7.3f %%\n",data.no_correct,data.per15);
+        System.out.println("Generalization:  %7.3f\n",data.gen);
     }
-
 
     /* Train the net until the error is less than the given value */
 /* The error is written as a function of #epoch in a file */
-    void Train_for_error(net,train,val,fname)
-    Neural_net *net;
-    Data_set *train,*val;
-    char fname[30];
+    void Train_for_error(BP net, Dataset train, Dataset val, String fname)
     {
         Permute_set set;
         int u,epoch;
@@ -586,27 +556,27 @@ public class BP {
         strcat(fna[0],".val1"); strcat(fna[1],".val15");
 
         fp=fopen(fname,"w");
-        fprintf(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
+        System.out.println(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
                 net.eta,net.alfa,train.error);
         fclose(fp);
         fp=fopen(fna[0],"w");
-        fprintf(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
+        System.out.println(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
                 net.eta,net.alfa,train.error);
         fclose(fp);
         fp=fopen(fna[1],"w");
-        fprintf(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
+        System.out.println(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
                 net.eta,net.alfa,train.error);
         fclose(fp);
 
         Allocate_set(&set,train.no);
         err = Error(net,train,val);
-        printf("Start error=%7.3f\n",err);
+        System.out.println("Start error=%7.3f\n",err);
         epoch=0;
         while (err > train.error)
         {
-            Init_set(&set,train.no);
+            Init_set(set,train.no);
             epoch++; printf("Epoch %d.  ",epoch);
-            while (Size_of_set(&set) != 0)
+            while (Size_of_set(set) != 0)
             {
                 u = Get_random_element(&set);
                 Present_pattern(net,train,u);
@@ -616,7 +586,7 @@ public class BP {
             }
 
             err = Error(net,train,val);
-            printf("Error=%7.3f\n",err);
+            System.out.println("Error=%7.3f\n",err);
             fp=fopen(fname,"a"); fprintf(fp,"%d %7.3f\n",epoch,err); fclose(fp);
             fp=fopen(fna[0],"a"); fprintf(fp,"%d %7.3f\n",epoch,val.per1);
             fclose(fp);
@@ -626,13 +596,8 @@ public class BP {
         Deallocate_set(&set);
     }
 
-
     /* Train the net for a fixed #epoch, and return the best net */
-    void Train_for_gen(net,train,val,fname,no_epoch)
-    Neural_net *net;
-    Data_set *train,*val;
-    char fname[30];
-    int no_epoch;
+    void Train_for_gen(BP net, Dataset train, Dataset val, String fname, int no_epoch)
     {
         Permute_set set;
         int u,epoch,minepoch;
@@ -645,15 +610,15 @@ public class BP {
         strcat(fna[0],".val1"); strcat(fna[1],".val15");
 
         fp=fopen(fname,"w");
-        fprintf(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
+        System.out.pringln(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
                 net.eta,net.alfa,no_epoch);
         fclose(fp);
         fp=fopen(fna[0],"w");
-        fprintf(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
+        System.out.pringln(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
                 net.eta,net.alfa,no_epoch);
         fclose(fp);
         fp=fopen(fna[1],"w");
-        fprintf(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
+        System.out.pringln(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
                 net.eta,net.alfa,no_epoch);
         fclose(fp);
 
@@ -689,20 +654,14 @@ public class BP {
             fp=fopen(fna[1],"a"); fprintf(fp,"%d %7.3f\n",epoch,val.per15);
             fclose(fp);
         }
-        printf("Maximum performance reached after %d epochs.\n",minepoch);
-        printf("Incorrect seed classified incorrectly (<1%%): %7.3f%%\n",gen1);
-        printf("Correct seed classified incorrectly (<15%%): %7.3f%%\n\n",gen15);
+        System.out.pringln("Maximum performance reached after %d epochs.\n",minepoch);
+        System.out.pringln("Incorrect seed classified incorrectly (<1%%): %7.3f%%\n",gen1);
+        System.out.pringln("Correct seed classified incorrectly (<15%%): %7.3f%%\n\n",gen15);
 
-        Deallocate_set(&set);
         Restore_weights(net);
     }
 
-
-    void Auto_train(net,train,val,test,no_runs,no_epoch,fname)
-    Neural_net *net;
-    Data_set *train,*val,*test;
-    int no_runs,no_epoch;
-    char fname[30];
+    void Auto_train(BP net, Dataset train, Dataset val, Dataset test, int no_runs, int no_epoch, String fname)
     {
         Permute_set set;
         int u,epoch,minepoch,run,Sepoch,SSQepoch;
@@ -717,11 +676,11 @@ public class BP {
         strcat(fna[0],".valres"); strcat(fna[1],".testres");
 
         fp=fopen(fna[0],"a");
-        fprintf(fp,"# eta=%7.3f, alfa=%7.3f, epoch=%d, hidden=%d\n",
+        System.out.prinln(fp,"# eta=%7.3f, alfa=%7.3f, epoch=%d, hidden=%d\n",
                 net.eta,net.alfa,no_epoch,net.no_units[0]);
         fclose(fp);
         fp=fopen(fna[1],"a");
-        fprintf(fp,"# eta=%7.3f, alfa=%7.3f, epoch=%d, hidden=%d\n",
+        System.out.prinln(fp,"# eta=%7.3f, alfa=%7.3f, epoch=%d, hidden=%d\n",
                 net.eta,net.alfa,no_epoch,net.no_units[0]);
         fclose(fp);
 
@@ -732,18 +691,18 @@ public class BP {
         Sepoch=Stid=Sperf=SSQepoch=SSQtid=SSQperf=0;
         Sgen1=SSQgen1=Sgen15=SSQgen15=0.0;
         VSgen1=VSSQgen1=VSgen15=VSSQgen15=0.0;
-        for (run=0; run < no_runs; run++)
+        for (int run=0; run < no_runs; run++)
         {
             time(&tid1);
             Initialize_net(net);
             mingen=999.0;
-            for (epoch=0; epoch < no_epoch; epoch++)
+            for (int epoch=0; epoch < no_epoch; epoch++)
             {
                 Init_set(&set,train.no);
 	  /*printf("Run: %d   Epoch: %d.\n",run,epoch);*/
-                while (Size_of_set(&set) != 0)
+                while (Size_of_set(set) != 0)
                 {
-                    u = Get_random_element(&set);
+                    u = Get_random_element(set);
                     Present_pattern(net,train,u);
                     Activate_net(net);
                     Error_back_propagation(net,train,u);
@@ -774,10 +733,10 @@ public class BP {
             Stid=Stid+(tid2-tid1); SSQtid=SSQtid+(tid2-tid1)*(tid2-tid1);
             Sperf=Sperf+(test.no/(tid4-tid3)); SSQperf=SSQperf+(test.no/(tid4-tid3))*(test.no/(tid4-tid3));
             fp=fopen(fna[0],"a");
-            fprintf(fp,"%d %8.4f %8.4f\n",minepoch,gen1,gen15);
+            System.out.prinln(fp,"%d %8.4f %8.4f\n",minepoch,gen1,gen15);
             fclose(fp);
             fp=fopen(fna[1],"a");
-            fprintf(fp,"%d %8.4f %8.4f %d %d %d\n",minepoch,test.per1,test.per15,tid2-tid1,test.no/(tid4-tid3),(tid4-tid3));
+            System.out.prinln(fp,"%d %8.4f %8.4f %d %d %d\n",minepoch,test.per1,test.per15,tid2-tid1,test.no/(tid4-tid3),(tid4-tid3));
             fclose(fp);
         }
         fp=fopen(fna[0],"a");
@@ -786,37 +745,29 @@ public class BP {
         Sgen1/=no_runs; Sgen15/=no_runs; SSQgen1/=no_runs; SSQgen15/=no_runs;
         Stid/=no_runs; SSQtid/=no_runs;
         Sperf/=no_runs; SSQperf/=no_runs;
-        fprintf(fp,"Epoch: (%d %7.3f)    1%%: (%7.3f %7.3f)   15%%: (%7.3f %7.3f)\n",
+        System.out.prinln(fp,"Epoch: (%d %7.3f)    1%%: (%7.3f %7.3f)   15%%: (%7.3f %7.3f)\n",
                 Sepoch, sqrt( ((double) (SSQepoch-Sepoch*Sepoch)) ),
                 VSgen1, sqrt((VSSQgen1-VSgen1*VSgen1)),
                 VSgen15, sqrt((VSSQgen15-VSgen15*VSgen15)));
         fclose(fp);
         fp=fopen(fna[1],"a");
-        fprintf(fp,"Epoch: (%d %7.3f)    1%%: (%7.3f %7.3f)   15%%: (%7.3f %7.3f)\n",
+        System.out.prinln(fp,"Epoch: (%d %7.3f)    1%%: (%7.3f %7.3f)   15%%: (%7.3f %7.3f)\n",
                 Sepoch, sqrt( ((double) (SSQepoch-Sepoch*Sepoch)) ),
                 Sgen1, sqrt((SSQgen1-Sgen1*Sgen1)),
                 Sgen15, sqrt((SSQgen15-Sgen15*Sgen15)));
-        fprintf(fp,"Time: (%d %.2f)    Performance: (%d %.2f)\n",
+        System.out.prinln(fp,"Time: (%d %.2f)    Performance: (%d %.2f)\n",
                 Stid,   sqrt( ((double) (SSQtid-Stid*Stid)) ),
                 Sperf,  sqrt( ((double) (SSQperf-Sperf*Sperf)) ));
         fclose(fp);
-
-        Deallocate_set(&set);
     }
 
-
     /* Analyze with use of different parameter values */
-    void Analyze(net,train,val,test,no_runs,no_epoch,fname)
-    Neural_net *net;
-    Data_set *train,*val,*test;
-    int no_runs,no_epoch;
-    char fname[30];
+    void Analyze(BP net, Dataset train, Dataset val, Dataset test, int no_runs, int no_epoch,fname)
     {
-        int eta,alfa;
 
-        for (eta=0.1; eta<=0.85; eta+=0.15)
+        for (double eta=0.1; eta<=0.85; eta+=0.15)
         {
-            for (alfa=0.1; alfa<=1.0; alfa+=0.20)
+            for (double alfa=0.1; alfa<=1.0; alfa+=0.20)
             {
                 Set_eta(net,eta);
                 Set_alfa(net,alfa);
@@ -826,129 +777,7 @@ public class BP {
 
     }
 
-
-    void main(argc,argv)
-    int argc;
-    char *argv[];
-    {
-        Data_set train,test,val;
-        Neural_net net;
-        long now;
-        char fname[50],fname1[50],fname2[50],fname3[50],fna[2][50];
-        FILE *fp,*fopen();
-
-        if ((argc!=3) && (argc!=5) && (argc!=6) && (argc!=7) )
-        {
-            printf("ANTAL SKJULTE KNUDER=%d\n",HID_UNITS);
-            printf("USAGE: BP error <file> <error> <eta> <alfa>\n");
-            printf("       BP gen <file> <#epoch> <eta> <alfa>\n");
-            printf("       BP test <file>\n");
-            printf("       BP auto <file> <#runs> <#epoch> <eta> <alfa>\n");
-            printf("       BP analyze <file> <#runs> <#epoch>\n");
-        }
-        else
-        {
-            Set_acc(&net,1.0);
-
-            time(&now); srand(now); /* srand48(now); */
-            strcpy(fname,argv[2]);
-            strcpy(fname1,argv[2]);
-            strcpy(fname2,argv[2]);
-            strcpy(fname3,argv[2]);
-
-            if ( (argc==6) && (strcmp(argv[1],"error")==0) )
-            {
-                printf("Train for error.\n");
-                Read_dataset(&net,&train,strcat(fname,".train"));
-                Read_dataset(&net,&val,strcat(fname1,".val"));
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-                Initialize_net(&net);
-
-                train.error=test.error=atof(argv[3]);
-                Set_eta(&net,(double) atof(argv[4]));
-                Set_alfa(&net,(double) atof(argv[5]));
-
-                Show_weights(&net);
-                Train_for_error(&net, &train, &val, fname3);
-                Save_weights(&net,strcat(argv[2],".weight"));
-                printf("\nNet performance on TRAINING set\n");
-                Test_network(&net,&train); Print_results(&train);
-                printf("\nNet performance on TEST set\n");
-                Test_network(&net,&test); Print_results(&test);
-            }
-            else if ( (argc==6) && (strcmp(argv[1],"gen")==0) )
-            {
-                printf("Train for a maximum generalization within %d epochs.\n",
-                        atoi(argv[3]));
-                Read_dataset(&net,&train,strcat(fname,".train"));
-                Read_dataset(&net,&val,strcat(fname1,".val"));
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-                Initialize_net(&net);
-
-                Set_eta(&net,(double) atof(argv[4]));
-                Set_alfa(&net,(double) atof(argv[5]));
-
-                Show_weights(&net);
-                Train_for_gen(&net, &train, &val, fname3, atoi(argv[3]) );
-                Save_weights(&net,strcat(argv[2],".weight"));
-                printf("\nNet performance on TRAINING set\n");
-                Test_network(&net,&train); Print_results(&train);
-                printf("\nNet performance on TEST set\n");
-                Test_network(&net,&test); Print_results(&test);
-            }
-            else if ( (argc==3) && (strcmp(argv[1],"test")==0) )
-            {
-                printf("Test the net with with test data.\n");
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-                Initialize_net(&net);
-
-                Load_weights(&net,strcat(fname3,".weight"));
-/*	  Show_weights(&net);*/
-                printf("\nNet performance on TEST set\n");
-                Test_network(&net,&test); Print_results(&test);
-            }
-            else if ( (argc==7) && (strcmp(argv[1],"auto")==0) )
-            {
-                strcpy(fna[0],fname);   strcpy(fna[1],fname);
-                strcat(fna[0],".valres"); strcat(fna[1],".testres");
-                fp=fopen(fna[0],"w"); fclose(fp);
-                fp=fopen(fna[1],"w"); fclose(fp);
-
-                printf("Automatic train for %d runs of %d epochs.\n",atoi(argv[3]),
-                        atoi(argv[4]));
-                Read_dataset(&net,&train,strcat(fname,".train"));
-                Read_dataset(&net,&val,strcat(fname1,".val"));
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-	  /* Initialize_net(&net); */
-
-                Set_eta(&net,(double) atof(argv[5]));
-                Set_alfa(&net,(double) atof(argv[6]));
-
-                Auto_train(&net,&train,&val,&test,atoi(argv[3]),atoi(argv[4]),argv[2]);
-            }
-            else if ( (argc==5) && (strcmp(argv[1],"analyze")==0) )
-            {
-                strcpy(fna[0],fname);   strcpy(fna[1],fname);
-                strcat(fna[0],".valres"); strcat(fna[1],".testres");
-                fp=fopen(fna[0],"w"); fclose(fp);
-                fp=fopen(fna[1],"w"); fclose(fp);
-
-                printf("Analyze with %d runs of %d epochs.\n",atoi(argv[3]),
-                        atoi(argv[4]));
-                Read_dataset(&net,&train,strcat(fname,".train"));
-                Read_dataset(&net,&val,strcat(fname1,".val"));
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-                Initialize_net(&net);
-
-                Analyze(&net,&train,&val,&test,atoi(argv[3]),atoi(argv[4]),argv[2]);
-            }
-        }
-    }
+/* Set the net parameter 'eta' (Learning) */
 }
 
 

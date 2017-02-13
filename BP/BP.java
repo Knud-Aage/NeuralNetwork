@@ -58,7 +58,7 @@ public class BP {
     {
         int prev_size;
 
-        System.out.printf("#Hidden units=%d\n",no_hidden_units);
+        System.out.println("#Hidden units=%d",no_hidden_units);
         net.no_hidden_layers=1; /* --- Only 1 hidden layer --- */
 
         net.input= new double[net.no_inputs+1];

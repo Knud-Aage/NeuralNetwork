@@ -1,4 +1,4 @@
-package com.neuralnetwork;
+package dk.kb.neuralnetworks;
 
 /**
  * Created by Knud Åge on 05-02-2017.

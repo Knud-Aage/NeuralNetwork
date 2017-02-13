@@ -1,4 +1,4 @@
-package com.neuralnetwork;
+package dk.kb.neuralnetworks;
 
 public class Main {
 

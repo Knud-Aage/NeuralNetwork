@@ -1,11 +1,11 @@
-package com.neuralnetwork;
+package dk.kb.neuralnetworks;
 
 /**
  * Created by Knud Åge on 05-02-2017.
  */
 public class Utils {
 
-    static public double g(h,a) {
+    static public double g(double h, double a) {
         return (1 / (1 + Math.exp(-(a)*(h))));   /* The activation function */
     }
 

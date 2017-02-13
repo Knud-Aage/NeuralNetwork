@@ -1,6 +1,6 @@
-package com.neuralnetwork;
+package dk.kb.neuralnetworks;
 
-import static com.neuralnetwork.Utils.wrandom;
+import static dk.kb.neuralnetworks.Utils.wrandom;
 import static java.lang.Math.sqrt;
 import static java.lang.System.exit;
 
@@ -58,7 +58,7 @@ public class BP {
     {
         int prev_size;
 
-        System.out.println("#Hidden units=%d",no_hidden_units);
+        System.out.format("#Hidden units=%d",no_hidden_units);
         net.no_hidden_layers=1; /* --- Only 1 hidden layer --- */
 
         net.input= new double[net.no_inputs+1];
@@ -130,7 +130,8 @@ public class BP {
     /* Read the training set from file */
     void Read_dataset(BP net, Dataset data, String filename)
     {
-        FILE *fp,*fopen();
+        int temp;
+        FILE *fp,fopen();
         if ( (fp = fopen(filename,"r")) == NULL )
         {
             printf("Could not open file '%s' !!!\n",filename);
@@ -138,8 +139,8 @@ public class BP {
         }
         else
         {
-            fscanf(fp,"%d %d",&net.no_inputs,&net.no_outputs);
-            fscanf(fp,"%d",&data.no);
+            fscanf(fp,"%d %d",net.no_inputs,net.no_outputs);
+            fscanf(fp,"%d",data.no);
             printf("#Data: %d",data.no);
             printf("  Inputs: %d",net.no_inputs);
             printf("  Outputs: %d\n",net.no_outputs);
@@ -149,14 +150,14 @@ public class BP {
             data.no_correct=0; data.no_incorrect=0;
             for (int u=0; u <= data.no-1; u++)
             {
-                data.Plist[u].input= new double[data.in+1]);
+                data.Plist[u].input= new double[data.in+1];
                 data.Plist[u].output= new double[data.out+1]);
                 for (int j=1; j <= data.in; j++)
                 {
-                    fscanf(fp,"%lf",&data.Plist[u].input[j]);
+                    fscanf(fp,"%lf",data.Plist[u].input[j]);
                 }
-                fscanf(fp,"%d",&temp);
-                data.Plist[u].class=temp;
+                fscanf(fp,"%d",temp);
+                data.Plist[u].patternClass=temp;
                 if (temp==0) data.no_correct++; else data.no_incorrect++;
                 for (int i=1; i <= data.out; i++)
                 {
@@ -192,7 +193,7 @@ public class BP {
     /* Save the weights of all the net links */
     void Save_weights(BP net,String filename)
     {
-        FILE *fp,*fopen();
+        FILE fp,*fopen();
         int prev_size;
 
         if ( (fp = fopen(filename,"w")) == NULL )
@@ -222,7 +223,7 @@ public class BP {
     /* Load the weights of the net links */
     void Load_weights(BP net,String filename)
     {
-        FILE *fp,*fopen();
+        FILE fp,*fopen();
         int prev_size;
 
         if ( (fp = fopen(filename,"r")) == NULL )
@@ -239,7 +240,7 @@ public class BP {
                 {
                     for (int j=0; j <= prev_size; j++)
                     {
-                        fscanf(fp,"%lf",&net.layer[l].unit[i].weight[j]);
+                        fscanf(fp,"%lf",net.layer[l].unit[i].weight[j]);
                     }
                 }
             }

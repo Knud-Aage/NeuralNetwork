@@ -12,4 +12,9 @@ public class Utils {
     static public double wrandom() {
         return ( Math.random()*2 - 1 );
     }
+
+    static public double sqr(double x) {
+        return x * x;
+    }
+
 }

@@ -1,5 +1,7 @@
 package dk.kb.neuralnetworks;
 
+import static dk.kb.neuralnetworks.Utils.g;
+import static dk.kb.neuralnetworks.Utils.sqr;
 import static dk.kb.neuralnetworks.Utils.wrandom;
 import static java.lang.Math.sqrt;
 import static java.lang.System.exit;

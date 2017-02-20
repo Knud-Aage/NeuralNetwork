@@ -4,7 +4,7 @@ public class Main {
 
     public static void main(String[] args) {
 	// write your code here
-        Data_set train,test,val;
+/*        Data_set train,test,val;
         Neural_net net;
         long now;
         char fname[50],fname1[50],fname2[50],fname3[50],fna[2][50];
@@ -24,7 +24,7 @@ public class Main {
             Set_acc(&net,1.0);
 
             time(&now); srand(now); /* srand48(now); */
-            strcpy(fname,argv[2]);
+/*            strcpy(fname,argv[2]);
             strcpy(fname1,argv[2]);
             strcpy(fname2,argv[2]);
             strcpy(fname3,argv[2]);
@@ -80,7 +80,7 @@ public class Main {
 
                 Load_weights(&net,strcat(fname3,".weight"));
 /*	  Show_weights(&net);*/
-                printf("\nNet performance on TEST set\n");
+/*                printf("\nNet performance on TEST set\n");
                 Test_network(&net,&test); Print_results(&test);
             }
             else if ( (argc==7) && (strcmp(argv[1],"auto")==0) )
@@ -97,7 +97,7 @@ public class Main {
                 Read_dataset(&net,&test,strcat(fname2,".test"));
                 Allocate_net(&net,HID_UNITS);
 	  /* Initialize_net(&net); */
-
+/*
                 Set_eta(&net,(double) atof(argv[5]));
                 Set_alfa(&net,(double) atof(argv[6]));
 
@@ -121,5 +121,6 @@ public class Main {
                 Analyze(&net,&train,&val,&test,atoi(argv[3]),atoi(argv[4]),argv[2]);
             }
         }
+*/
     }
 }

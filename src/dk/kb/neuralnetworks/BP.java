@@ -1,5 +1,14 @@
 package dk.kb.neuralnetworks;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static dk.kb.neuralnetworks.Utils.g;
 import static dk.kb.neuralnetworks.Utils.sqr;
 import static dk.kb.neuralnetworks.Utils.wrandom;
@@ -129,46 +138,36 @@ public class BP {
         net.acc=acc;
     }
 
-    /* Read the training set from file */
-    void Read_dataset(BP net, Dataset data, String filename)
-    {
-        int temp;
-        FILE *fp,fopen();
-        if ( (fp = fopen(filename,"r")) == NULL )
-        {
-            printf("Could not open file '%s' !!!\n",filename);
-            exit(-1);
-        }
-        else
-        {
-            fscanf(fp,"%d %d",net.no_inputs,net.no_outputs);
-            fscanf(fp,"%d",data.no);
-            printf("#Data: %d",data.no);
-            printf("  Inputs: %d",net.no_inputs);
-            printf("  Outputs: %d\n",net.no_outputs);
-            data.in = net.no_inputs;
-            data.out = net.no_outputs;
-            data.Plist= new Pattern[data.no];
-            data.no_correct=0; data.no_incorrect=0;
-            for (int u=0; u <= data.no-1; u++)
-            {
-                data.Plist[u].input= new double[data.in+1];
-                data.Plist[u].output= new double[data.out+1]);
-                for (int j=1; j <= data.in; j++)
-                {
-                    fscanf(fp,"%lf",data.Plist[u].input[j]);
-                }
-                fscanf(fp,"%d",temp);
-                data.Plist[u].patternClass=temp;
-                if (temp==0) data.no_correct++; else data.no_incorrect++;
-                for (int i=1; i <= data.out; i++)
-                {
-                    data.Plist[u].output[i]=((i==(temp+1)) ? (1.0) : (0.0));
-                }
+    /**
+     * Use BufferedWriter when number of write operations are more
+     * It uses internal buffer to reduce real IO operations and saves time
+     *
+     * @param data
+     * @param noOfLines
+     */
+    /*private static void writeUsingBufferedWriter(String data, int noOfLines) {
+        File file = new File("/Users/pankaj/BufferedWriter.txt");
+        FileWriter fr = null;
+        BufferedWriter br = null;
+        String dataWithNewLine = data + System.getProperty("line.separator");
+        try {
+            fr = new FileWriter(file);
+            br = new BufferedWriter(fr);
+            for (int i = noOfLines; i > 0; i--) {
+                br.write(dataWithNewLine);
             }
-            fclose(fp);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                br.close();
+                fr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-    }
+
+    }*/
 
     /* Show the weights of all the links in the neural net */
     void Show_weights(BP net)
@@ -189,64 +188,63 @@ public class BP {
                 }
             }
         }
-        printf("\n");
     }
 
     /* Save the weights of all the net links */
     void Save_weights(BP net,String filename)
     {
-        FILE fp,*fopen();
-        int prev_size;
+        try {
+            //Get the file reference
+            Path path = Paths.get(filename);
+            int prev_size;
+            String tmpString = "";
 
-        if ( (fp = fopen(filename,"w")) == NULL )
-        {
-            printf("Could not save file '%s' !!!\n",filename);
-            exit(-1);
-        }
-        else
-        {
-            for (int l=0; l <= net.no_hidden_layers; l++)
-            {
-                prev_size=((l>0) ? (net.no_units[l-1]) : (net.no_inputs));
-                for (int i=1; i <= net.no_units[l]; i++)
-                {
-                    for (int j=0; j <= prev_size; j++)
-                    {
-                        fprintf(fp,"%12.7f ",net.layer[l].unit[i].weight[j]);
+//Use try-with-resource to get auto-closeable writer instance
+            try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+                for (int l = 0; l <= net.no_hidden_layers; l++) {
+                    prev_size = ((l > 0) ? (net.no_units[l - 1]) : (net.no_inputs));
+                    for (int i = 1; i <= net.no_units[l]; i++) {
+                        for (int j = 0; j <= prev_size; j++) {
+                            tmpString += String.format("%12.7f ", net.layer[l].unit[i].weight[j]);
+                        }
+                        writer.write(tmpString);
                     }
-                    fprintf(fp,"\n");
+                    writer.newLine();
                 }
-                fprintf(fp,"\n");
             }
-            fclose(fp);
+        }
+        catch (IOException ioe) {
+            System.out.println("IOE");
         }
     }
 
     /* Load the weights of the net links */
     void Load_weights(BP net,String filename)
     {
-        FILE fp,*fopen();
-        int prev_size;
+        List<String> list = new ArrayList<>();
 
-        if ( (fp = fopen(filename,"r")) == NULL )
-        {
-            printf("Could not load file '%s' !!!\n",filename);
-            exit(-1);
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(filename))) {
+            list = br.lines().collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        else
+
+
+
+        int prev_size;
+        String[] splitStr;
+
         {
             for (int l=0; l <= net.no_hidden_layers; l++)
             {
                 prev_size=((l>0) ? (net.no_units[l-1]) : (net.no_inputs));
                 for (int i=1; i <= net.no_units[l]; i++)
                 {
+                    splitStr = list.get(0).split(" ");
                     for (int j=0; j <= prev_size; j++)
-                    {
-                        fscanf(fp,"%lf",net.layer[l].unit[i].weight[j]);
-                    }
+                        net.layer[l].unit[i].weight[j] = Double.valueOf(splitStr[j]);
                 }
             }
-            fclose(fp);
         }
     }
 
@@ -300,16 +298,14 @@ public class BP {
     /* Compute the activity of all units in the net for the given input */
     void Activate_net(BP net)
     {
-        register double sum;
+        double sum;
 
   /* Compute the activity of the 1'st layer using the input layer */
         for (int i=1; i <= net.no_units[0]; i++)
         {
             sum=0.0;
             for (int j=0; j <= net.no_inputs; j++)
-            {
                 sum += net.input[j] * net.layer[0].unit[i].weight[j];
-            }
             net.layer[0].unit[i].act = g((sum),(net.acc));
       /*printf("(%7.3f %7.3f) ",sum,g((sum),(net.acc)));*/
         }
@@ -502,7 +498,6 @@ public class BP {
         double maxo;
         long tid1,tid2;
 
-        time(&tid1);
         data.per1=data.per15=data.gen=0.0;
         for (int u=0; u < data.no; u++)
         {
@@ -530,57 +525,62 @@ public class BP {
         data.per1 /= data.no_incorrect; data.per1 *= 100.0;
         data.per15 /= data.no_correct; data.per15 *= 100.0;
         data.gen /= data.no; data.gen *= 100;
-        time(&tid2);
-        printf("Time: %ld   Performance: %d\n",tid2-tid1,data.no/(tid2-tid1));
+        //printf("Time: %ld   Performance: %d\n",tid2-tid1,data.no/(tid2-tid1));
     }
 
     void Print_results(Dataset data)
     {
         System.out.println("Correctly predicted in class / total in class\n");
         System.out.println("---------------------------------------------\n");
-        System.out.println("Incorrect seed classified incorrectly (<1%%):  (#incorrect=%d) %7.3f %%\n",data.no_incorrect,data.per1);
-        System.out.println("Correct seed classified incorrectly (<15%%):   (#correct=%d) %7.3f %%\n",data.no_correct,data.per15);
-        System.out.println("Generalization:  %7.3f\n",data.gen);
+        System.out.format("Incorrect seed classified incorrectly (<1%%):  (#incorrect=%d) %7.3f %%\n",data.no_incorrect,data.per1);
+        System.out.format("Correct seed classified incorrectly (<15%%):   (#correct=%d) %7.3f %%\n",data.no_correct,data.per15);
+        System.out.format("Generalization:  %7.3f\n",data.gen);
     }
 
     /* Train the net until the error is less than the given value */
 /* The error is written as a function of #epoch in a file */
     void Train_for_error(BP net, Dataset train, Dataset val, String fname)
     {
-        Permute_set set;
+        Permute_set set = new Permute_set();
         int u,epoch;
         double err;
-        char fna[2][30];
-        FILE *fp,*fopen();
+        //Get the file reference
+        int prev_size;
 
-        strcpy(fna[0],fname); strcpy(fna[1],fname);
-        strcat(fname,".error");
-        strcat(fna[0],".val1"); strcat(fna[1],".val15");
+//Use try-with-resource to get auto-closeable writer instance
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(fname+".error"))) {
+            writer.write(String.format("# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",net.eta,net.alfa,train.error));
+        }
+        catch (IOException ioe) {
+            System.out.println("IOE");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(fname+".val1"))) {
+            writer.write(String.format("# eta=%7.3f, alfa=%7.3f, error=%7.2f",net.eta,net.alfa,train.error));
+        }
+        catch (IOException ioe) {
+            System.out.println("IOE");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(fname+".val15"))) {
+            writer.write(String.format("# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",net.eta,net.alfa,train.error));
+        }
+        catch (IOException ioe) {
+            System.out.println("IOE");
+        }
 
-        fp=fopen(fname,"w");
-        System.out.println(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
-                net.eta,net.alfa,train.error);
-        fclose(fp);
-        fp=fopen(fna[0],"w");
-        System.out.println(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
-                net.eta,net.alfa,train.error);
-        fclose(fp);
-        fp=fopen(fna[1],"w");
-        System.out.println(fp,"# eta=%7.3f, alfa=%7.3f, error=%7.2f\n",
-                net.eta,net.alfa,train.error);
-        fclose(fp);
 
-        Allocate_set(&set,train.no);
+        //Allocate_set(&set,train.no);
         err = Error(net,train,val);
-        System.out.println("Start error=%7.3f\n",err);
+        System.out.format("Start error=%7.3f\n",err);
         epoch=0;
+        Permute_set trainSet = new Permute_set();
         while (err > train.error)
         {
-            Init_set(set,train.no);
-            epoch++; printf("Epoch %d.  ",epoch);
-            while (Size_of_set(set) != 0)
+            set.Init_set(set,train.no);
+            epoch++;
+            System.out.format("Epoch %d.  ",epoch);
+            while (set.Size_of_set(set) != 0)
             {
-                u = Get_random_element(&set);
+                u = set.Get_random_element(set);
                 Present_pattern(net,train,u);
                 Activate_net(net);
                 Error_back_propagation(net,train,u);
@@ -588,14 +588,30 @@ public class BP {
             }
 
             err = Error(net,train,val);
-            System.out.println("Error=%7.3f\n",err);
-            fp=fopen(fname,"a"); fprintf(fp,"%d %7.3f\n",epoch,err); fclose(fp);
-            fp=fopen(fna[0],"a"); fprintf(fp,"%d %7.3f\n",epoch,val.per1);
-            fclose(fp);
-            fp=fopen(fna[1],"a"); fprintf(fp,"%d %7.3f\n",epoch,val.per15);
-            fclose(fp);
+            System.out.format("Error=%7.3f\n",err);
+            try (FileWriter f = new FileWriter(fname+".error", true);
+                 BufferedWriter b = new BufferedWriter(f);
+                 PrintWriter p = new PrintWriter(b);) {
+                p.println(String.format("%d %7.3f\n",epoch,err));
+            } catch (IOException i) {
+                i.printStackTrace();
+            }
+
+            try (FileWriter f = new FileWriter(fname+".error", true);
+                 BufferedWriter b = new BufferedWriter(f);
+                 PrintWriter p = new PrintWriter(b);) {
+                p.println(String.format("%d %7.3f\n",epoch,val.per1));
+            } catch (IOException i) {
+                i.printStackTrace();
+            }
+            try (FileWriter f = new FileWriter(fname+".error", true);
+                 BufferedWriter b = new BufferedWriter(f);
+                 PrintWriter p = new PrintWriter(b);) {
+                p.println(String.format("%d %7.3f\n",epoch,val.per15));
+            } catch (IOException i) {
+                i.printStackTrace();
+            }
         }
-        Deallocate_set(&set);
     }
 
     /* Train the net for a fixed #epoch, and return the best net */
@@ -605,36 +621,35 @@ public class BP {
         int u,epoch,minepoch;
         double err,gen,mingen,gen1,gen15;
         char fna[2][30];
-        FILE *fp,*fopen();
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(fname+".error"))) {
+            writer.write(String.format("# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",net.eta,net.alfa,no_epoch));
+        }
+        catch (IOException ioe) {
+            System.out.println("IOE");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(fname+".val1"))) {
+            writer.write(String.format("# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",net.eta,net.alfa,no_epoch));
+        }
+        catch (IOException ioe) {
+            System.out.println("IOE");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(fname+".val15"))) {
+            writer.write(String.format("# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",net.eta,net.alfa,no_epoch));
+        }
+        catch (IOException ioe) {
+            System.out.println("IOE");
+        }
 
-        strcpy(fna[0],fname); strcpy(fna[1],fname);
-        strcat(fname,".error");
-        strcat(fna[0],".val1"); strcat(fna[1],".val15");
-
-        fp=fopen(fname,"w");
-        System.out.pringln(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
-                net.eta,net.alfa,no_epoch);
-        fclose(fp);
-        fp=fopen(fna[0],"w");
-        System.out.pringln(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
-                net.eta,net.alfa,no_epoch);
-        fclose(fp);
-        fp=fopen(fna[1],"w");
-        System.out.pringln(fp,"# eta=%7.3f, alfa=%7.3f, #epoch=%d\n",
-                net.eta,net.alfa,no_epoch);
-        fclose(fp);
-
-        Allocate_set(&set,train.no);
         err = Error(net,train,val); printf("Start error=%7.3f\n",err);
         minepoch=epoch=0; mingen=999.0;
         gen1=gen15=0.0;
         while (epoch < no_epoch)
         {
-            Init_set(&set,train.no);
+            set.Init_set(set,train.no);
             epoch++; /* printf("Epoch %d.  ",epoch); */
-            while (Size_of_set(&set) != 0)
+            while (set.Size_of_set(set) != 0)
             {
-                u = Get_random_element(&set);
+                u = set.Get_random_element(set);
                 Present_pattern(net,train,u);
                 Activate_net(net);
                 Error_back_propagation(net,train,u);
@@ -764,9 +779,8 @@ public class BP {
     }
 
     /* Analyze with use of different parameter values */
-    void Analyze(BP net, Dataset train, Dataset val, Dataset test, int no_runs, int no_epoch,fname)
+    void Analyze(BP net, Dataset train, Dataset val, Dataset test, int no_runs, int no_epoch, String fname)
     {
-
         for (double eta=0.1; eta<=0.85; eta+=0.15)
         {
             for (double alfa=0.1; alfa<=1.0; alfa+=0.20)
@@ -776,7 +790,6 @@ public class BP {
                 Auto_train(net,train,val,test,no_runs,no_epoch,fname);
             }
         }
-
     }
 
 /* Set the net parameter 'eta' (Learning) */

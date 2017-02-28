@@ -1,126 +1,168 @@
 package dk.kb.neuralnetworks;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+
 public class Main {
 
-    public static void main(String[] args) {
-	// write your code here
-/*        Data_set train,test,val;
-        Neural_net net;
-        long now;
-        char fname[50],fname1[50],fname2[50],fname3[50],fna[2][50];
-        FILE *fp,*fopen();
+    private static final String FILENAME = "c:\\Code\\Java\\SB\\Innovation\\result.txt";
+    private static String[] fna = new String[2];
+    private static Dataset train,test,val;
+    //BP net = new BP();
+    private static long now;
+    private static String fname,fname1,fname2,fname3;
+    //StringBuffer stringBuffer = new StringBuffer();
 
-        if ((argc!=3) && (argc!=5) && (argc!=6) && (argc!=7) )
-        {
-            printf("ANTAL SKJULTE KNUDER=%d\n",HID_UNITS);
-            printf("USAGE: BP error <file> <error> <eta> <alfa>\n");
-            printf("       BP gen <file> <#epoch> <eta> <alfa>\n");
-            printf("       BP test <file>\n");
-            printf("       BP auto <file> <#runs> <#epoch> <eta> <alfa>\n");
-            printf("       BP analyze <file> <#runs> <#epoch>\n");
-        }
+    public static void usage() {
+        System.out.format("ANTAL SKJULTE KNUDER=%d\n",BP.hidden_units);
+        System.out.println("USAGE: BP error <file> <error> <eta> <alfa>\n");
+        System.out.println("       BP gen <file> <#epoch> <eta> <alfa>\n");
+        System.out.println("       BP test <file>\n");
+        System.out.println("       BP auto <file> <#runs> <#epoch> <eta> <alfa>\n");
+        System.out.println("       BP analyze <file> <#runs> <#epoch>\n");
+    }
+
+    public static void main(String[] args) throws IOException {
+        // write your code here
+
+
+//        Path path = Paths.get("c:\\Code\\Java\\SB\\Innovation\\result.txt");
+//        String question = "To be or not to be?";
+//        Files.write(path, question.getBytes());
+
+        //FILE *fp,*fopen();
+
+        double trainError = 0.15;
+        double eta = 0.1;
+        double alfa = 0.1;
+        int noEpochs = 500;
+        int noRuns = 100;
+        int hiddenUnits = 15;
+
+        if (args.equals("error"))
+            train(fname1, trainError, eta, alfa, hiddenUnits);
+        else if (args.equals("gen"))
+            generate(fname1, noEpochs, eta, alfa, hiddenUnits);
+        else if (args.equals("test"))
+            test(fname1, hiddenUnits);
+        else if (args.equals("auto"))
+            auto(fname1, noRuns, noEpochs, eta, alfa, hiddenUnits);
+        else if (args.equals("analyze"))
+            analyze(fname1, noRuns, noEpochs, hiddenUnits);
         else
-        {
-            Set_acc(&net,1.0);
+            usage();
+    }
 
-            time(&now); srand(now); /* srand48(now); */
-/*            strcpy(fname,argv[2]);
-            strcpy(fname1,argv[2]);
-            strcpy(fname2,argv[2]);
-            strcpy(fname3,argv[2]);
+    private static void analyze(String filename, int noRuns, int noEpochs, int hiddenUnits) {
+        BP net = new BP();
+        net.Set_acc(net, 1.0);
+        fna[0] = filename + ".valres";
+        fna[1] = filename + ".testres";
 
-            if ( (argc==6) && (strcmp(argv[1],"error")==0) )
-            {
-                printf("Train for error.\n");
-                Read_dataset(&net,&train,strcat(fname,".train"));
-                Read_dataset(&net,&val,strcat(fname1,".val"));
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-                Initialize_net(&net);
+        System.out.format("Analyze with %d runs of %d epochs.\n", noRuns, noEpochs);
+        train.Read_dataset(filename + ".train", net);
+        val.Read_dataset(filename + ".val", net);
+        test.Read_dataset(filename + ".test", net);
+        net.Allocate_net(net, hiddenUnits);
+        net.Initialize_net(net);
 
-                train.error=test.error=atof(argv[3]);
-                Set_eta(&net,(double) atof(argv[4]));
-                Set_alfa(&net,(double) atof(argv[5]));
+        net.Analyze(net, train, val, test, noRuns, noEpochs, filename);
+    }
 
-                Show_weights(&net);
-                Train_for_error(&net, &train, &val, fname3);
-                Save_weights(&net,strcat(argv[2],".weight"));
-                printf("\nNet performance on TRAINING set\n");
-                Test_network(&net,&train); Print_results(&train);
-                printf("\nNet performance on TEST set\n");
-                Test_network(&net,&test); Print_results(&test);
-            }
-            else if ( (argc==6) && (strcmp(argv[1],"gen")==0) )
-            {
-                printf("Train for a maximum generalization within %d epochs.\n",
-                        atoi(argv[3]));
-                Read_dataset(&net,&train,strcat(fname,".train"));
-                Read_dataset(&net,&val,strcat(fname1,".val"));
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-                Initialize_net(&net);
+    private static void auto(String filename, int noRuns, int noEpochs, double eta, double alfa, int hiddenUnits) {
+        BP net = new BP();
+        net.Set_acc(net, 1.0);
+        fna[0] = fname + ".valres";
+        fna[1] = fname + ".testres";
 
-                Set_eta(&net,(double) atof(argv[4]));
-                Set_alfa(&net,(double) atof(argv[5]));
-
-                Show_weights(&net);
-                Train_for_gen(&net, &train, &val, fname3, atoi(argv[3]) );
-                Save_weights(&net,strcat(argv[2],".weight"));
-                printf("\nNet performance on TRAINING set\n");
-                Test_network(&net,&train); Print_results(&train);
-                printf("\nNet performance on TEST set\n");
-                Test_network(&net,&test); Print_results(&test);
-            }
-            else if ( (argc==3) && (strcmp(argv[1],"test")==0) )
-            {
-                printf("Test the net with with test data.\n");
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-                Initialize_net(&net);
-
-                Load_weights(&net,strcat(fname3,".weight"));
-/*	  Show_weights(&net);*/
-/*                printf("\nNet performance on TEST set\n");
-                Test_network(&net,&test); Print_results(&test);
-            }
-            else if ( (argc==7) && (strcmp(argv[1],"auto")==0) )
-            {
-                strcpy(fna[0],fname);   strcpy(fna[1],fname);
-                strcat(fna[0],".valres"); strcat(fna[1],".testres");
-                fp=fopen(fna[0],"w"); fclose(fp);
-                fp=fopen(fna[1],"w"); fclose(fp);
-
-                printf("Automatic train for %d runs of %d epochs.\n",atoi(argv[3]),
-                        atoi(argv[4]));
-                Read_dataset(&net,&train,strcat(fname,".train"));
-                Read_dataset(&net,&val,strcat(fname1,".val"));
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
+        System.out.format("Automatic train for %d runs of %d epochs.\n", noRuns,noEpochs);
+        train.Read_dataset(fname+".train", net);
+        val.Read_dataset(fname1+".val", net);
+        test.Read_dataset(fname2+".test", net);
+        net.Allocate_net(net, hiddenUnits);
 	  /* Initialize_net(&net); */
-/*
-                Set_eta(&net,(double) atof(argv[5]));
-                Set_alfa(&net,(double) atof(argv[6]));
 
-                Auto_train(&net,&train,&val,&test,atoi(argv[3]),atoi(argv[4]),argv[2]);
-            }
-            else if ( (argc==5) && (strcmp(argv[1],"analyze")==0) )
-            {
-                strcpy(fna[0],fname);   strcpy(fna[1],fname);
-                strcat(fna[0],".valres"); strcat(fna[1],".testres");
-                fp=fopen(fna[0],"w"); fclose(fp);
-                fp=fopen(fna[1],"w"); fclose(fp);
+        net.Set_eta(net, eta);
+        net.Set_alfa(net, alfa);
 
-                printf("Analyze with %d runs of %d epochs.\n",atoi(argv[3]),
-                        atoi(argv[4]));
-                Read_dataset(&net,&train,strcat(fname,".train"));
-                Read_dataset(&net,&val,strcat(fname1,".val"));
-                Read_dataset(&net,&test,strcat(fname2,".test"));
-                Allocate_net(&net,HID_UNITS);
-                Initialize_net(&net);
+        net.Auto_train(net, train, val, test, noRuns, noEpochs, filename);
+    }
 
-                Analyze(&net,&train,&val,&test,atoi(argv[3]),atoi(argv[4]),argv[2]);
-            }
-        }
-*/
+    private static void test(String filename, int hiddenUnits) {
+        BP net = new BP();
+        net.Set_acc(net, 1.0);
+        System.out.println("Test the net with with test data.\n");
+        test.Read_dataset(filename+".test", net);
+        net.Allocate_net(net, hiddenUnits);
+        net.Initialize_net(net);
+
+        net.Load_weights(net, filename+".weight");
+/*	  Show_weights(&net);*/
+        System.out.println("\nNet performance on TEST set\n");
+        net.Test_network(net, test);
+        net.Print_results(test);
+    }
+
+    private static void generate(String filename, int noEpochs, double eta, double alfa, int hiddenUnits) {
+        BP net = new BP();
+        net.Set_acc(net, 1.0);
+        System.out.format("Train for a maximum generalization within %d epochs.\n",noEpochs);
+        train.Read_dataset(filename+".train", net);
+        val.Read_dataset(filename+".val", net);
+        test.Read_dataset(filename+".test", net);
+        net.Allocate_net(net, hiddenUnits);
+        net.Initialize_net(net);
+
+        net.Set_eta(net, eta);
+        net.Set_alfa(net, alfa);
+
+        net.Show_weights(net);
+        net.Train_for_gen(net, train, val, filename, noEpochs);
+        net.Save_weights(net, filename+".weight");
+        System.out.println("\nNet performance on TRAINING set\n");
+        net.Test_network(net, train);
+        net.Print_results(train);
+        System.out.println("\nNet performance on TEST set\n");
+        net.Test_network(net, test);
+        net.Print_results(test);
+    }
+
+    private static void train(String filename, double trainError, double eta, double alfa, int hiddenUnits) {
+        BP net = new BP();
+        net.Set_acc(net, 1.0);
+        System.out.println("Train for error.\n");
+        train.Read_dataset(filename+".train", net);
+        val.Read_dataset(filename+".val", net);
+        test.Read_dataset(filename+".test", net);
+        net.Allocate_net(net, hiddenUnits);
+        net.Initialize_net(net);
+
+        train.error = test.error = trainError;
+        net.Set_eta(net, eta);
+        net.Set_alfa(net, alfa);
+
+        net.Show_weights(net);
+        net.Train_for_error(net, train, val, fname3);
+        net.Save_weights(net,filename+".weight");
+        System.out.println("\nNet performance on TRAINING set\n");
+        net.Test_network(net, train);
+        net.Print_results(train);
+        System.out.println("\nNet performance on TEST set\n");
+        net.Test_network(net, test);
+        net.Print_results(test);
     }
 }

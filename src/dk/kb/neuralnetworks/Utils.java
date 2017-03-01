@@ -17,4 +17,8 @@ public class Utils {
         return x * x;
     }
 
+    static public double abs(double x) {
+        return (x<0) ? -x : x;
+    }
+
 }

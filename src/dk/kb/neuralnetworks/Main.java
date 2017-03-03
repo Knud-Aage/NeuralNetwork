@@ -19,7 +19,8 @@ import java.nio.file.Paths;
 
 public class Main {
 
-    private static final String FILENAME = "c:\\Code\\Java\\SB\\Innovation\\result.txt";
+    //private static final String FILENAME = "c:\\Code\\Java\\SB\\Innovation\\result.txt";
+    private static final String filename = "/home/kaah/Code/Inno/Cursive OCR/NeuralNetwork/test/rug/rug_450_3000";
     private static String[] fna = new String[2];
     private static Dataset train,test,val;
     //BP net = new BP();
@@ -46,6 +47,7 @@ public class Main {
 
         //FILE *fp,*fopen();
 
+
         double trainError = 0.15;
         double eta = 0.1;
         double alfa = 0.1;
@@ -53,9 +55,9 @@ public class Main {
         int noRuns = 100;
         int hiddenUnits = 15;
 
-        if (args.equals("error"))
-            train(fname1, trainError, eta, alfa, hiddenUnits);
-        else if (args.equals("gen"))
+        //if (args.equals("error"))
+            train(filename, trainError, eta, alfa, hiddenUnits);
+        /*else if (args.equals("gen"))
             generate(fname1, noEpochs, eta, alfa, hiddenUnits);
         else if (args.equals("test"))
             test(fname1, hiddenUnits);
@@ -65,9 +67,10 @@ public class Main {
             analyze(fname1, noRuns, noEpochs, hiddenUnits);
         else
             usage();
+*/
     }
 
-    private static void analyze(String filename, int noRuns, int noEpochs, int hiddenUnits) {
+    public static void analyze(String filename, int noRuns, int noEpochs, int hiddenUnits) {
         BP net = new BP();
         net.Set_acc(net, 1.0);
         fna[0] = filename + ".valres";
@@ -83,7 +86,7 @@ public class Main {
         net.Analyze(net, train, val, test, noRuns, noEpochs, filename);
     }
 
-    private static void auto(String filename, int noRuns, int noEpochs, double eta, double alfa, int hiddenUnits) {
+    public static void auto(String filename, int noRuns, int noEpochs, double eta, double alfa, int hiddenUnits) {
         BP net = new BP();
         net.Set_acc(net, 1.0);
         fna[0] = fname + ".valres";
@@ -102,7 +105,7 @@ public class Main {
         net.Auto_train(net, train, val, test, noRuns, noEpochs, filename);
     }
 
-    private static void test(String filename, int hiddenUnits) {
+    public static void test(String filename, int hiddenUnits) {
         BP net = new BP();
         net.Set_acc(net, 1.0);
         System.out.println("Test the net with with test data.\n");
@@ -117,7 +120,7 @@ public class Main {
         net.Print_results(test);
     }
 
-    private static void generate(String filename, int noEpochs, double eta, double alfa, int hiddenUnits) {
+    public static void generate(String filename, int noEpochs, double eta, double alfa, int hiddenUnits) {
         BP net = new BP();
         net.Set_acc(net, 1.0);
         System.out.format("Train for a maximum generalization within %d epochs.\n",noEpochs);
@@ -141,15 +144,18 @@ public class Main {
         net.Print_results(test);
     }
 
-    private static void train(String filename, double trainError, double eta, double alfa, int hiddenUnits) {
+    public static void train(String filename, double trainError, double eta, double alfa, int hiddenUnits) {
         BP net = new BP();
         net.Set_acc(net, 1.0);
         System.out.println("Train for error.\n");
+        train = new Dataset();
         train.Read_dataset(filename+".train", net);
+        val = new Dataset();
         val.Read_dataset(filename+".val", net);
+        test = new Dataset();
         test.Read_dataset(filename+".test", net);
-        net.Allocate_net(net, hiddenUnits);
-        net.Initialize_net(net);
+        net = net.Allocate_net(net, hiddenUnits);
+        net = net.Initialize_net(net);
 
         train.error = test.error = trainError;
         net.Set_eta(net, eta);

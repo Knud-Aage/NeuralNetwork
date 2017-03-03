@@ -66,52 +66,71 @@ public class BP {
 
     /* Allocate net with the specifications from the start of the pat.file */
 /* Format: #input, #output, #hidden_layer, #hid1_units, #hid2_units ... */
-    public void Allocate_net(BP net, int no_hidden_units) {
-        int prev_size;
+    public BP Allocate_net(BP net, int no_hidden_units) {
+        try {
+            int prev_size;
 
-        System.out.format("#Hidden units=%d", no_hidden_units);
-        net.no_hidden_layers = 1; /* --- Only 1 hidden layer --- */
+            System.out.format("#Hidden units=%d", no_hidden_units);
+            net.no_hidden_layers = 1; /* --- Only 1 hidden layer --- */
 
-        net.input = new double[net.no_inputs + 1];
-        net.layer = new Layer[net.no_hidden_layers + 1];
-        net.no_units = new int[net.no_hidden_layers + 1];
-        for (int layer = 0; layer < net.no_hidden_layers; layer++) {
-            net.no_units[layer] = no_hidden_units;
-        }
-        net.no_units[net.no_hidden_layers] = net.no_outputs;
-        for (int layer = 0; layer <= net.no_hidden_layers; layer++) {
-            net.layer[layer].unit = new Unit[net.no_units[layer] + 1];
-            for (int i = 1; i <= net.no_units[layer]; i++) {
-                prev_size = ((layer > 0) ? (net.no_units[layer - 1]) : (net.no_inputs));
-                net.layer[layer].unit[i].weight = new double[prev_size + 1];
-                net.layer[layer].unit[i].prev_dW = new double[prev_size + 1];
-                net.layer[layer].unit[i].eW = new double[prev_size + 1];
-                net.layer[layer].unit[i].best_weight = new double[prev_size + 1];
+            net.input = new double[net.no_inputs + 1];
+            net.layer = new Layer[net.no_hidden_layers + 1];
+            net.no_units = new int[net.no_hidden_layers + 1];
+            for (int layer = 0; layer < net.no_hidden_layers; layer++) {
+                net.no_units[layer] = no_hidden_units;
+            }
+            net.no_units[net.no_hidden_layers] = net.no_outputs;
+            for (int layer = 0; layer <= net.no_hidden_layers; layer++) {
+                net.layer[layer] = new Layer();
+                net.layer[layer].unit = new Unit[net.no_units[layer] + 1];
+                for (int i = 1; i <= net.no_units[layer]; i++) {
+                    net.layer[layer].unit[i] = new Unit();
+                    prev_size = ((layer > 0) ? (net.no_units[layer - 1]) : (net.no_inputs));
+                    net.layer[layer].unit[i].weight = new double[prev_size + 1];
+                    net.layer[layer].unit[i].prev_dW = new double[prev_size + 1];
+                    net.layer[layer].unit[i].eW = new double[prev_size + 1];
+                    net.layer[layer].unit[i].best_weight = new double[prev_size + 1];
+                }
             }
         }
+        catch (Exception ex) {
+            System.out.print("Exception: " + ex);
+        }
+        return net;
     }
 
     /* Initialize weights and threshold to ] -3/sqrt(n); 3/sqrt(n) [     */
 /* Also every layers unit 0 is given the activity -1.0               */
-    void Initialize_net(BP net) {
-        int prev_size;
+    public BP Initialize_net(BP net) {
 
-
-        net.input[0] = -1.0;
-        for (int layer = 0; layer <= net.no_hidden_layers; layer++) {
-            net.layer[layer].unit[0].act = -1.0;
-            prev_size = ((layer > 0) ? (net.no_units[layer - 1]) : (net.no_inputs));
-            System.out.printf("Layer %d:  Initializing weights to +/- %6.3f\n", layer, (3 / sqrt(((double) prev_size))));
-            for (int i = 1; i <= net.no_units[layer]; i++) {
-                for (int j = 0; j <= prev_size; j++) {
-                    net.layer[layer].unit[i].weight[j] = wrandom();
-                    net.layer[layer].unit[i].weight[j] *= (3 / sqrt(((double) prev_size)));
-                    net.layer[layer].unit[i].prev_dW[j] = 0.0;
-                    net.layer[layer].unit[i].eW[j] = 0.0;
-                    net.layer[layer].unit[i].best_weight[j] = 0.0;
+        try {
+            int prev_size;
+            net.input[0] = -1.0;
+            for (int layerno = 0; layerno <= net.no_hidden_layers; layerno++) {
+                net.layer[layerno].unit[0] = new Unit();
+                net.layer[layerno].unit[0].act = -1.0;
+                prev_size = ((layerno > 0) ? (net.no_units[layerno - 1]) : (net.no_inputs));
+                System.out.printf("Layer %d:  Initializing weights to +/- %6.3f\n", layerno, (3 / sqrt(((double) prev_size))));
+                for (int i = 1; i <= net.no_units[layerno]; i++) {
+                    net.layer[layerno].unit[i] = new Unit();
+                    net.layer[layerno].unit[i].weight = new double[prev_size+1];
+                    net.layer[layerno].unit[i].prev_dW = new double[prev_size+1];
+                    net.layer[layerno].unit[i].eW = new double[prev_size+1];
+                    net.layer[layerno].unit[i].best_weight= new double[prev_size+1];
+                    for (int j = 0; j <= prev_size; j++) {
+                        net.layer[layerno].unit[i].weight[j] = wrandom();
+                        net.layer[layerno].unit[i].weight[j] *= (3 / sqrt(((double) prev_size)));
+                        net.layer[layerno].unit[i].prev_dW[j] = 0.0;
+                        net.layer[layerno].unit[i].eW[j] = 0.0;
+                        net.layer[layerno].unit[i].best_weight[j] = 0.0;
+                    }
                 }
             }
         }
+        catch (Exception ex) {
+            System.out.print("Exception: " + ex);
+        }
+        return net;
     }
 
     /* Set the net parameter 'alfa' (Momentum) */

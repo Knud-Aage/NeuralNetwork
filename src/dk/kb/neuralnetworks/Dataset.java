@@ -19,9 +19,9 @@ public class Dataset {
     int in,out;           /* Integers representing #input, #output */
     int no;               /* No. of patterns in the data set */
     double error;         /* Total error to train the net for */
-    Pattern[] Plist;      /* Array of the patterns */
     int no_correct;       /* No.of correct data */
     int no_incorrect;     /* No. of incorrect data */
+    Pattern[] Plist;      /* Array of the patterns */
     double per1,per15,gen;/* The 2 classification percents */
 
     /* Read the training set from file */
@@ -36,15 +36,18 @@ public class Dataset {
             e.printStackTrace();
         }
 
+
         in = Integer.valueOf(list.get(0));
         list.remove(0);
-        out = Integer.valueOf(list.get(1));
+        out = Integer.valueOf(list.get(0));
         list.remove(0);
-        no = Integer.valueOf(list.get(2));
+        no = Integer.valueOf(list.get(0));
         list.remove(0);
+        Plist = new Pattern[no];
         String[] splitStr;
-        for (int u=0; u < no-1; u++)
+        for (int u=0; u < no; u++)
         {
+            Plist[u] = new Pattern();
             Plist[u].input= new double[in+1];
             Plist[u].output= new double[out+1];
             splitStr = list.get(0).split(" ");
@@ -62,10 +65,16 @@ public class Dataset {
             }
             list.remove(0);
         }
+        /*list.remove(0);
         splitStr = list.get(0).split(" ");
-        net.no_inputs = Integer.valueOf(splitStr[0]);
-        net.no_outputs = Integer.valueOf(splitStr[1]);
-        no = Integer.valueOf(list.get(1));
+        net.no_inputs = Integer.valueOf(splitStr[splitStr.length-1]);
+        list.remove(0);
+        splitStr = list.get(0).split(" ");
+        net.no_outputs = Integer.valueOf(splitStr[splitStr.length-1]);
+        no = Integer.valueOf(list.get(splitStr.length-1));
+        */
+        net.no_inputs = in;
+        net.no_outputs = out;
         System.out.format("#Data: %d",no);
         System.out.format("  Inputs: %d",net.no_inputs);
         System.out.format("  Outputs: %d\n",net.no_outputs);

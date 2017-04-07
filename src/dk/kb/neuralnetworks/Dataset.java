@@ -80,7 +80,7 @@ public class Dataset {
         System.out.format("  Outputs: %d\n",net.no_outputs);
         in = net.no_inputs;
         out = net.no_outputs;
-        Plist= new Pattern[no];
-        no_correct=0; no_incorrect=0;
+        //Plist= new Pattern[no];
+        //no_correct=0; no_incorrect=0;
     }
 }

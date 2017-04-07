@@ -12,6 +12,7 @@ public class Permute_set
   /* Initialisering af den permuterede maengde */
   public void Init_set(Permute_set set, int max)
   {
+    set.element = new int[max];
     for (int i=0; i < max; i++)
       set.element[i] = i;
     set.no_elements = max;

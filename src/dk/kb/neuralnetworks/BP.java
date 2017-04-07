@@ -200,18 +200,15 @@ public class BP {
             e.printStackTrace();
         }
 
-
         int prev_size;
         String[] splitStr;
 
-        {
-            for (int l = 0; l <= net.no_hidden_layers; l++) {
-                prev_size = ((l > 0) ? (net.no_units[l - 1]) : (net.no_inputs));
-                for (int i = 1; i <= net.no_units[l]; i++) {
-                    splitStr = list.get(0).split(" ");
-                    for (int j = 0; j <= prev_size; j++)
-                        net.layer[l].unit[i].weight[j] = Double.valueOf(splitStr[j]);
-                }
+        for (int l = 0; l <= net.no_hidden_layers; l++) {
+            prev_size = ((l > 0) ? (net.no_units[l - 1]) : (net.no_inputs));
+            for (int i = 1; i <= net.no_units[l]; i++) {
+                splitStr = list.get(0).split(" ");
+                for (int j = 0; j <= prev_size; j++)
+                    net.layer[l].unit[i].weight[j] = Double.valueOf(splitStr[j]);
             }
         }
     }

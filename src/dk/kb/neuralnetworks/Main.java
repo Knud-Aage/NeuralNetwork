@@ -19,8 +19,8 @@ import java.nio.file.Paths;
 
 public class Main {
 
-    //private static final String FILENAME = "c:\\Code\\Java\\SB\\Innovation\\result.txt";
-    private static final String filename = "/home/kaah/Code/Inno/Cursive OCR/NeuralNetwork/test/rug/rug_450_3000";
+    private static final String filename = "C:\\Code\\Repository\\NeuralNetwork\\test\\rug\\rug_450_3000";
+    //private static final String filename = "/home/kaah/Code/Inno/Cursive OCR/NeuralNetwork/test/rug/rug_450_3000";
     private static String[] fna = new String[2];
     private static Dataset train,test,val;
     //BP net = new BP();
@@ -48,7 +48,7 @@ public class Main {
         //FILE *fp,*fopen();
 
 
-        double trainError = 0.15;
+        double trainError = 90.15;
         double eta = 0.1;
         double alfa = 0.1;
         int noEpochs = 500;
@@ -56,16 +56,16 @@ public class Main {
         int hiddenUnits = 15;
 
         //if (args.equals("error"))
-            train(filename, trainError, eta, alfa, hiddenUnits);
-        /*else if (args.equals("gen"))
-            generate(fname1, noEpochs, eta, alfa, hiddenUnits);
-        else if (args.equals("test"))
-            test(fname1, hiddenUnits);
-        else if (args.equals("auto"))
-            auto(fname1, noRuns, noEpochs, eta, alfa, hiddenUnits);
-        else if (args.equals("analyze"))
-            analyze(fname1, noRuns, noEpochs, hiddenUnits);
-        else
+         //   train(filename, trainError, eta, alfa, hiddenUnits);
+        //else if (args.equals("gen"))
+        //    generate(filename, noEpochs, eta, alfa, hiddenUnits);
+        //else if (args.equals("test"))
+        //    test(filename, hiddenUnits);
+        //else if (args.equals("auto"))
+         //   auto(filename, noRuns, noEpochs, eta, alfa, hiddenUnits);
+        //else if (args.equals("analyze"))
+            analyze(filename, noRuns, noEpochs, hiddenUnits);
+        /*else
             usage();
 */
     }
@@ -77,8 +77,11 @@ public class Main {
         fna[1] = filename + ".testres";
 
         System.out.format("Analyze with %d runs of %d epochs.\n", noRuns, noEpochs);
+        train = new Dataset();
         train.Read_dataset(filename + ".train", net);
+        val = new Dataset();
         val.Read_dataset(filename + ".val", net);
+        test = new Dataset();
         test.Read_dataset(filename + ".test", net);
         net.Allocate_net(net, hiddenUnits);
         net.Initialize_net(net);
@@ -89,13 +92,16 @@ public class Main {
     public static void auto(String filename, int noRuns, int noEpochs, double eta, double alfa, int hiddenUnits) {
         BP net = new BP();
         net.Set_acc(net, 1.0);
-        fna[0] = fname + ".valres";
-        fna[1] = fname + ".testres";
+        fna[0] = filename + ".valres";
+        fna[1] = filename + ".testres";
 
         System.out.format("Automatic train for %d runs of %d epochs.\n", noRuns,noEpochs);
-        train.Read_dataset(fname+".train", net);
-        val.Read_dataset(fname1+".val", net);
-        test.Read_dataset(fname2+".test", net);
+        train = new Dataset();
+        train.Read_dataset(filename+".train", net);
+        val = new Dataset();
+        val.Read_dataset(filename+".val", net);
+        test = new Dataset();
+        test.Read_dataset(filename+".test", net);
         net.Allocate_net(net, hiddenUnits);
 	  /* Initialize_net(&net); */
 
@@ -109,6 +115,7 @@ public class Main {
         BP net = new BP();
         net.Set_acc(net, 1.0);
         System.out.println("Test the net with with test data.\n");
+        test = new Dataset();
         test.Read_dataset(filename+".test", net);
         net.Allocate_net(net, hiddenUnits);
         net.Initialize_net(net);
@@ -124,8 +131,11 @@ public class Main {
         BP net = new BP();
         net.Set_acc(net, 1.0);
         System.out.format("Train for a maximum generalization within %d epochs.\n",noEpochs);
+        train = new Dataset();
         train.Read_dataset(filename+".train", net);
+        val = new Dataset();
         val.Read_dataset(filename+".val", net);
+        test = new Dataset();
         test.Read_dataset(filename+".test", net);
         net.Allocate_net(net, hiddenUnits);
         net.Initialize_net(net);

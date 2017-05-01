@@ -64,7 +64,7 @@ public class Main {
         //else if (args.equals("auto"))
          //   auto(filename, noRuns, noEpochs, eta, alfa, hiddenUnits);
         //else if (args.equals("analyze"))
-            analyze(filename, noRuns, noEpochs, hiddenUnits);
+            //analyze(filename, noRuns, noEpochs, hiddenUnits);
         /*else
             usage();
 */

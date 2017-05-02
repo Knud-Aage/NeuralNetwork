@@ -193,13 +193,13 @@ public class BP {
     /* Load the weights of the net links */
     void Load_weights(BP net, String filename) {
         List<String> list = new ArrayList<>();
-
+/*
         try (BufferedReader br = Files.newBufferedReader(Paths.get(filename))) {
             list = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+*/
         int prev_size;
         String[] splitStr;
 

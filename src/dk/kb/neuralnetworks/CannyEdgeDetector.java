@@ -2,6 +2,7 @@ package dk.kb.neuralnetworks;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
+
 /**
  * <p><em>This software has been released into the public domain.
  * <strong>Please read the notes in this source file for additional information.

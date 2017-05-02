@@ -29,13 +29,13 @@ public class Dataset {
     {
         int temp;
         List<String> list = new ArrayList<>();
-
+/*
         try (BufferedReader br = Files.newBufferedReader(Paths.get(filename))) {
             list = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+*/
 
         in = Integer.valueOf(list.get(0));
         list.remove(0);
